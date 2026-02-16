@@ -1,0 +1,188 @@
+@page "/turbines"
+@using MudBlazor
+@using WindTurbineMonitor.Infrastructure.Data
+@using WindTurbineMonitor.Core.Entities
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<AppDbContext> DbContextFactory
+@inject ISnackbar Snackbar
+
+<PageTitle>Turbines Management</PageTitle>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+    .turbine-row {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .turbine-row:hover {
+        background: rgba(102, 126, 234, 0.05);
+        transform: scale(1.01);
+    }
+</style>
+
+<!-- Header -->
+<div class="page-header">
+    <div class="d-flex align-center justify-space-between">
+        <div>
+            <MudText Typo="Typo.h3" Class="white-text mb-0">Turbines Management</MudText>
+            <MudText Typo="Typo.subtitle1" Class="white-text opacity-75">
+                Manage and monitor all turbines
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddNewTurbine">
+            Add Turbine
+        </MudButton>
+    </div>
+</div>
+
+<!-- Content -->
+@if (isLoading)
+{
+    <MudPaper Class="pa-8 text-center" Elevation="0">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        <MudText Typo="Typo.h6" Class="mt-4">Loading turbines...</MudText>
+    </MudPaper>
+}
+else if (turbines != null && turbines.Any())
+{
+    <MudPaper Elevation="2">
+        <MudTable Items="@turbines" Hover="true" Elevation="0" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Location</MudTh>
+                <MudTh>Model</MudTh>
+                <MudTh>Capacity</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Active</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">
+                    <MudText Typo="Typo.body1">@context.Name</MudText>
+                </MudTd>
+                <MudTd DataLabel="Location">
+                    <MudText Typo="Typo.body2">@context.Location</MudText>
+                </MudTd>
+                <MudTd DataLabel="Model">
+                    <MudText Typo="Typo.body2">@context.Model</MudText>
+                </MudTd>
+                <MudTd DataLabel="Capacity">
+                    <MudText Typo="Typo.body2">@context.Capacity MW</MudText>
+                </MudTd>
+                <MudTd DataLabel="Status">
+                    @if (context.Status == Core.Enums.TurbineStatus.Running)
+                    {
+                        <MudText Typo="Typo.body2" Class="success-text">@context.Status</MudText>
+                    }
+                    else if (context.Status == Core.Enums.TurbineStatus.Error)
+                    {
+                        <MudText Typo="Typo.body2" Class="error-text">@context.Status</MudText>
+                    }
+                    else if (context.Status == Core.Enums.TurbineStatus.Maintenance)
+                    {
+                        <MudText Typo="Typo.body2" Class="warning-text">@context.Status</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">@context.Status</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Active">
+                    <MudSwitch @bind-Checked="@context.IsActive" Color="Color.Success"
+                               Disabled="true" T="bool" />
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
+                               Size="Size.Small" Variant="Variant.Text"
+                               OnClick="() => EditTurbine(context)" />
+                    <MudButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                               Size="Size.Small" Variant="Variant.Text"
+                               OnClick="() => DeleteTurbine(context)" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent />
+        </MudTable>
+    </MudPaper>
+}
+else
+{
+    <MudAlert Severity="Severity.Warning" Elevation="3">
+        <MudText Typo="Typo.body1">No turbines found. Add your first turbine to get started!</MudText>
+    </MudAlert>
+}
+
+@code {
+    private List<Turbine>? turbines;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTurbinesAsync();
+    }
+
+    private async Task LoadTurbinesAsync()
+    {
+        isLoading = true;
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+            turbines = await context.Turbines
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load turbines: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Color GetStatusChipColor(Core.Enums.TurbineStatus status)
+    {
+        return status switch
+        {
+            Core.Enums.TurbineStatus.Running => Color.Success,
+            Core.Enums.TurbineStatus.Offline => Color.Default,
+            Core.Enums.TurbineStatus.Error => Color.Error,
+            Core.Enums.TurbineStatus.Maintenance => Color.Warning,
+            _ => Color.Info
+        };
+    }
+
+    private void AddNewTurbine()
+    {
+        Snackbar.Add("Add turbine feature coming soon!", Severity.Info);
+    }
+
+    private void EditTurbine(Turbine turbine)
+    {
+        Snackbar.Add($"Edit {turbine.Name} - Coming soon!", Severity.Info);
+    }
+
+    private async Task DeleteTurbine(Turbine turbine)
+    {
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+            context.Turbines.Remove(turbine);
+            await context.SaveChangesAsync();
+            await LoadTurbinesAsync();
+            Snackbar.Add("Turbine deleted successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to delete turbine: {ex.Message}", Severity.Error);
+        }
+    }
+}

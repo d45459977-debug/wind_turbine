@@ -1,0 +1,201 @@
+@using MudBlazor
+@using WindTurbineMonitor.Core.Entities
+
+<MudCard Elevation="3" Class="@("turbine-card " + GetStatusGradient())">
+    <style>
+        .turbine-card {
+            transition: all 0.3s ease;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .turbine-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+        }
+        .status-running {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .status-offline {
+            background: linear-gradient(135deg, #636363 0%, #a2ab58 100%);
+        }
+        .status-error {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .status-maintenance {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .status-starting, .status-stopping {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        .power-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @@keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        .efficiency-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .efficiency-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+    </style>
+
+    <MudCardHeader>
+        <CardHeaderContent>
+            <div class="d-flex align-center justify-space-between w-100">
+                <div>
+                    <MudText Typo="Typo.h6" Class="white-text mb-0">@Turbine.Name</MudText>
+                    <MudText Typo="Typo.caption" Class="white-text opacity-75">@Turbine.Model</MudText>
+                </div>
+                @if (Turbine.Status == Core.Enums.TurbineStatus.Running)
+                {
+                    <MudText Typo="Typo.caption" Class="success-text white-text">@Turbine.Status</MudText>
+                }
+                else if (Turbine.Status == Core.Enums.TurbineStatus.Error)
+                {
+                    <MudText Typo="Typo.caption" Class="error-text white-text">@Turbine.Status</MudText>
+                }
+                else if (Turbine.Status == Core.Enums.TurbineStatus.Maintenance)
+                {
+                    <MudText Typo="Typo.caption" Class="warning-text white-text">@Turbine.Status</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Class="white-text">@Turbine.Status</MudText>
+                }
+            </div>
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent Class="pt-2">
+        <!-- Location -->
+        <div class="d-flex align-center mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="mr-2" Color="Color.Secondary" />
+            <MudText Typo="Typo.body2" Class="white-text">@Turbine.Location</MudText>
+        </div>
+
+        <!-- Power Output -->
+        <div class="stat-box">
+            <div class="d-flex align-center justify-space-between mb-1">
+                <MudText Typo="Typo.caption" Class="white-text opacity-75">Power Output</MudText>
+                <span class="status-indicator" style="background: @(GetEfficiencyColor())"></span>
+            </div>
+            <div class="d-flex align-baseline">
+                <MudText Typo="Typo.h3" Class="power-value mb-0">@(LatestReading?.PowerKw.ToString("F1") ?? "0.0")</MudText>
+                <MudText Typo="Typo.h6" Class="white-text ml-2">kW</MudText>
+            </div>
+            <MudText Typo="Typo.caption" Class="white-text opacity-75">
+                Capacity: @Turbine.Capacity MW (@GetCapacityPercentage().ToString("F1")%)
+            </MudText>
+        </div>
+
+        <!-- Stats Grid -->
+        <MudGrid Class="mt-2">
+            <MudItem xs="6">
+                <div class="stat-box">
+                    <MudText Typo="Typo.caption" Class="white-text opacity-75">Wind Speed</MudText>
+                    <MudText Typo="Typo.h6" Class="white-text mb-0">@(LatestReading?.WindSpeedMs.ToString("F1") ?? "0.0")</MudText>
+                    <MudText Typo="Typo.caption" Class="white-text opacity-75">m/s</MudText>
+                </div>
+            </MudItem>
+            <MudItem xs="6">
+                <div class="stat-box">
+                    <MudText Typo="Typo.caption" Class="white-text opacity-75">Rotor Speed</MudText>
+                    <MudText Typo="Typo.h6" Class="white-text mb-0">@(LatestReading?.RotorSpeedRpm.ToString("F1") ?? "0.0")</MudText>
+                    <MudText Typo="Typo.caption" Class="white-text opacity-75">RPM</MudText>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Efficiency -->
+        <div class="stat-box mt-2">
+            <div class="d-flex align-center justify-space-between mb-2">
+                <MudText Typo="Typo.caption" Class="white-text opacity-75">Efficiency</MudText>
+                <MudText Typo="Typo.body2" Class="white-text mb-0">@(LatestReading?.EfficiencyPercent.ToString("F1") ?? "0.0")%</MudText>
+            </div>
+            <div class="efficiency-bar">
+                <div class="efficiency-fill" style="width: @(LatestReading?.EfficiencyPercent ?? 0)%; background: @(GetEfficiencyColor())"></div>
+            </div>
+        </div>
+
+        <!-- Wind Direction -->
+        @if (LatestReading != null)
+        {
+            <div class="d-flex align-center justify-space-between mt-3">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Explore" Class="mr-2" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Class="white-text opacity-75">Wind Direction</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Class="white-text">@LatestReading.WindDirectionDegrees.ToString("F0")°</MudText>
+            </div>
+        }
+    </MudCardContent>
+
+    <MudCardActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                   Class="white-text" OnClick="OnViewDetails">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-1" />
+            View Details
+        </MudButton>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary"
+                        Class="white-text" @onclick="OnRefresh" />
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter] public Turbine Turbine { get; set; } = null!;
+    [Parameter] public TurbineReading? LatestReading { get; set; }
+    [Parameter] public EventCallback OnViewDetails { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
+
+    private string GetStatusGradient()
+    {
+        return Turbine.Status switch
+        {
+            Core.Enums.TurbineStatus.Running => "status-running",
+            Core.Enums.TurbineStatus.Offline => "status-offline",
+            Core.Enums.TurbineStatus.Error => "status-error",
+            Core.Enums.TurbineStatus.Maintenance => "status-maintenance",
+            _ => "status-starting"
+        };
+    }
+
+    private string GetEfficiencyColor()
+    {
+        var efficiency = LatestReading?.EfficiencyPercent ?? 0;
+        if (efficiency >= 70) return "#4ade80";
+        if (efficiency >= 50) return "#fbbf24";
+        return "#f87171";
+    }
+
+    private double GetCapacityPercentage()
+    {
+        if (LatestReading == null || Turbine.Capacity == 0) return 0;
+        return (double)(LatestReading.PowerKw / (double)(Turbine.Capacity * 1000)) * 100;
+    }
+}

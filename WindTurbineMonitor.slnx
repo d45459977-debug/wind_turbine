@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WindTurbineMonitor.Core/WindTurbineMonitor.Core.csproj" />
+    <Project Path="src/WindTurbineMonitor.Infrastructure/WindTurbineMonitor.Infrastructure.csproj" />
+    <Project Path="src/WindTurbineMonitor.Server/WindTurbineMonitor.Server.csproj" />
+    <Project Path="src/WindTurbineMonitor.Shared/WindTurbineMonitor.Shared.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,334 @@
+@page "/dashboard"
+@using MudBlazor
+@using WindTurbineMonitor.Infrastructure.Data
+@using WindTurbineMonitor.Core.Entities
+@using Microsoft.EntityFrameworkCore
+@using WindTurbineMonitor.Server.Hubs
+
+@inject IDbContextFactory<AppDbContext> DbContextFactory
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Wind Turbine Dashboard</PageTitle>
+
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+    .total-turbines { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .running-turbines { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .total-power { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .avg-efficiency { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    .live-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #4ade80;
+        animation: pulse 2s infinite;
+    }
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .refresh-btn {
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+</style>
+
+<!-- Header -->
+<div class="dashboard-header">
+    <div class="d-flex align-center justify-space-between">
+        <div>
+            <MudText Typo="Typo.h3" Class="white-text mb-0">Wind Turbine Monitor</MudText>
+            <MudText Typo="Typo.subtitle1" Class="white-text opacity-75">
+                Real-time monitoring dashboard
+            </MudText>
+        </div>
+        <div class="d-flex align-center gap-3">
+            <div class="d-flex align-center white-text">
+                <span class="live-indicator mr-2"></span>
+                <MudText Typo="Typo.body2" Class="white-text mb-0">Live</MudText>
+            </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="RefreshData" Class="refresh-btn">
+                Refresh
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+@if (isLoading)
+{
+    <MudPaper Class="pa-8 text-center" Elevation="0">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        <MudText Typo="Typo.h6" Class="mt-4">Loading turbine data...</MudText>
+    </MudPaper>
+}
+else if (loadError != null)
+{
+    <MudAlert Severity="Severity.Error" Elevation="3">
+        <MudText Typo="Typo.body1">@loadError</MudText>
+        <MudButton OnClick="RefreshData" Class="mt-3">Retry</MudButton>
+    </MudAlert>
+}
+else if (turbines == null || !turbines.Any())
+{
+    <MudAlert Severity="Severity.Warning" Elevation="3">
+        <MudText Typo="Typo.body1">No turbines found. Please add turbines to start monitoring.</MudText>
+    </MudAlert>
+}
+else
+{
+    <!-- Statistics Cards -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <div class="stat-card">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.caption" Class="text-secondary">Total Turbines</MudText>
+                        <MudText Typo="Typo.h3" Class="mt-2">@turbines.Count</MudText>
+                        <MudText Typo="Typo.caption" Class="success-text--text">
+                            @runningCount active
+                        </MudText>
+                    </div>
+                    <div class="stat-icon total-turbines">
+                        <MudIcon Icon="@Icons.Material.Filled.WindPower" Color="Color.Surface" Size="Size.Large" />
+                    </div>
+                </div>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <div class="stat-card">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.caption" Class="text-secondary">Running</MudText>
+                        <MudText Typo="Typo.h3" Class="mt-2">@runningCount</MudText>
+                        <MudText Typo="Typo.caption" Class="@(runningCount > 0 ? "success-text--text" : "error-text--text")">
+                            @GetRunningPercentage().ToString("F1")% of total
+                        </MudText>
+                    </div>
+                    <div class="stat-icon running-turbines">
+                        <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Surface" Size="Size.Large" />
+                    </div>
+                </div>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <div class="stat-card">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.caption" Class="text-secondary">Total Power</MudText>
+                        <MudText Typo="Typo.h3" Class="mt-2">@totalPowerKw.ToString("F1")</MudText>
+                        <MudText Typo="Typo.caption" Class="info-text--text">
+                            kW (@(totalPowerKw / 1000).ToString("F2") MW)
+                        </MudText>
+                    </div>
+                    <div class="stat-icon total-power">
+                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Surface" Size="Size.Large" />
+                    </div>
+                </div>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <div class="stat-card">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.caption" Class="text-secondary">Avg Efficiency</MudText>
+                        <MudText Typo="Typo.h3" Class="mt-2">@avgEfficiency.ToString("F1")%</MudText>
+                        <MudText Typo="Typo.caption" Class="@(avgEfficiency >= 70 ? "success-text--text" : avgEfficiency >= 50 ? "warning-text--text" : "error-text--text")">
+                            @(avgEfficiency >= 70 ? "Excellent" : avgEfficiency >= 50 ? "Good" : "Needs Attention")
+                        </MudText>
+                    </div>
+                    <div class="stat-icon avg-efficiency">
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Surface" Size="Size.Large" />
+                    </div>
+                </div>
+            </div>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Turbines Grid -->
+    <MudText Typo="Typo.h5" Class="mb-3">
+        <MudIcon Icon="@Icons.Material.Filled.WindPower" Class="mr-2" VerticalAlign="Middle" />
+        Active Turbines
+    </MudText>
+    <MudGrid>
+        @foreach (var turbine in turbines.Where(t => t.IsActive))
+        {
+            var latestReading = latestReadings.GetValueOrDefault(turbine.Id);
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <TurbineCard Turbine="turbine"
+                           LatestReading="latestReading"
+                           OnViewDetails="() => ViewTurbineDetails(turbine.Id)"
+                           OnRefresh="() => RefreshTurbineData(turbine.Id)" />
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+<!-- Turbine Details Dialog -->
+<MudDialog @bind-IsOpen="showDialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Turbine Details</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (selectedTurbine != null)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2">Name</MudText>
+                    <MudText Typo="Typo.body1">@selectedTurbine.Name</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2">Model</MudText>
+                    <MudText Typo="Typo.body1">@selectedTurbine.Model</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2">Location</MudText>
+                    <MudText Typo="Typo.body1">@selectedTurbine.Location</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2">Capacity</MudText>
+                    <MudText Typo="Typo.body1">@selectedTurbine.Capacity MW</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2">Status</MudText>
+                    <MudText Typo="Typo.body1">@selectedTurbine.Status</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2">Installed</MudText>
+                    <MudText Typo="Typo.body1">@selectedTurbine.CreatedAt.ToString("MMM dd, yyyy")</MudText>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => showDialogOptions = false">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<Turbine>? turbines;
+    private Dictionary<Guid, TurbineReading> latestReadings = new();
+    private bool isLoading = true;
+    private string? loadError;
+    private bool showDialogOptions = false;
+    private Turbine? selectedTurbine;
+
+    private int runningCount => turbines?.Count(t => t.IsActive && t.Status == Core.Enums.TurbineStatus.Running) ?? 0;
+    private double totalPowerKw => latestReadings.Values.Sum(r => r.PowerKw);
+    private double avgEfficiency => latestReadings.Values.Any() ? latestReadings.Values.Average(r => r.EfficiencyPercent) : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+
+        // Auto-refresh every 5 seconds
+        var timer = new System.Timers.Timer(5000);
+        timer.Elapsed += async (sender, e) => await InvokeAsync(async () =>
+        {
+            await LoadDataAsync();
+            StateHasChanged();
+        });
+        timer.Start();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        loadError = null;
+
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+
+            turbines = await context.Turbines
+                .Where(t => t.IsActive)
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+
+            // Load latest reading for each turbine
+            foreach (var turbine in turbines)
+            {
+                var latestReading = await context.TurbineReadings
+                    .Where(r => r.TurbineId == turbine.Id)
+                    .OrderByDescending(r => r.Timestamp)
+                    .FirstOrDefaultAsync();
+
+                if (latestReading != null)
+                {
+                    latestReadings[turbine.Id] = latestReading;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Failed to load turbine data: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+        StateHasChanged();
+        await LoadDataAsync();
+        Snackbar.Add("Data refreshed", Severity.Success);
+    }
+
+    private async Task RefreshTurbineData(Guid turbineId)
+    {
+        await LoadDataAsync();
+        Snackbar.Add("Turbine data refreshed", Severity.Success);
+    }
+
+    private double GetRunningPercentage()
+    {
+        if (turbines == null || !turbines.Any()) return 0;
+        return (double)runningCount / turbines.Count * 100;
+    }
+
+    private void ViewTurbineDetails(Guid turbineId)
+    {
+        selectedTurbine = turbines?.FirstOrDefault(t => t.Id == turbineId);
+        if (selectedTurbine != null)
+        {
+            showDialogOptions = true;
+        }
+    }
+}

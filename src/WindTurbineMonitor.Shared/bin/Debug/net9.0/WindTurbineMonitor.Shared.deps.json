@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "WindTurbineMonitor.Shared/1.0.0": {
+        "runtime": {
+          "WindTurbineMonitor.Shared.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "WindTurbineMonitor.Shared/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

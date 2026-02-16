@@ -1,0 +1,11 @@
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\bin\Debug\net9.0\WindTurbineMonitor.Core.deps.json
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\bin\Debug\net9.0\WindTurbineMonitor.Core.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\bin\Debug\net9.0\WindTurbineMonitor.Core.pdb
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\WindTurbineMonitor.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\WindTurbineMonitor.Core.AssemblyInfoInputs.cache
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\WindTurbineMonitor.Core.AssemblyInfo.cs
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\WindTurbineMonitor.Core.csproj.CoreCompileInputs.cache
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\WindTurbineMonitor.Core.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\refint\WindTurbineMonitor.Core.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\WindTurbineMonitor.Core.pdb
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Core\obj\Debug\net9.0\ref\WindTurbineMonitor.Core.dll

@@ -1,0 +1,17 @@
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.AssemblyInfo.cs
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\bin\Debug\net9.0\WindTurbineMonitor.Infrastructure.deps.json
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\bin\Debug\net9.0\WindTurbineMonitor.Infrastructure.runtimeconfig.json
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\bin\Debug\net9.0\WindTurbineMonitor.Infrastructure.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\bin\Debug\net9.0\WindTurbineMonitor.Infrastructure.pdb
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\bin\Debug\net9.0\WindTurbineMonitor.Core.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\bin\Debug\net9.0\WindTurbineMonitor.Core.pdb
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurb.5C62F800.Up2Date
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\refint\WindTurbineMonitor.Infrastructure.dll
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.pdb
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\WindTurbineMonitor.Infrastructure.genruntimeconfig.cache
+C:\Users\wahyu\WindTurbineMonitor\src\WindTurbineMonitor.Infrastructure\obj\Debug\net9.0\ref\WindTurbineMonitor.Infrastructure.dll

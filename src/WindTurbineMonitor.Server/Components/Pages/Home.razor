@@ -1,0 +1,17 @@
+@page "/"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Wind Turbine Monitor</PageTitle>
+
+<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+<MudText Class="ml-4">Loading...</MudText>
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            NavigationManager.NavigateTo("/dashboard");
+        }
+    }
+}
